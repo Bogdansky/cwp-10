@@ -1,47 +1,27 @@
 const fs = require('fs');
+const editArray = require('./edit_array.js');
 const path = './top250.json';
+const notFound = {film:"not found"};
 
 module.exports.delete = (id) => {
     let json = JSON.parse(fs.readFileSync(path));
-    if (id > json.length || id < 0){
-        return false;
-    }
     return deleteElement(json,id);
 };
 
-function deleteElement(json, id){
-    let position = getIndex(json,id);
-    console.log(position);
+function deleteElement(json, id){  
+    let position = editArray.getIndex(json,id);
+    let deletedFilm;
     if (position === -1){
-        return false;
+        return notFound;
     }
-    json.splice(position,1);
-    json = shakeArray(json,position);
+    deletedFilm = json.splice(position-1, 1)[0];
+    json = editArray.shakeArray(json,position);
     try{
-        fs.writeFileSync(path, JSON.stringify(json));
-        return true;
+        fs.writeFileSync(path, JSON.stringify(json, '', 3));
+        return deletedFilm;
     }
     catch (error){
-        return false;
+        return notFound;
     }
 }
 
-function shakeArray(json, position){
-    if (position < json.length)
-    {
-        for (let index = position; index < json.length; index++){
-            json[index].id = index+1;
-        }
-    }
-    return json;
-}
-
-function getIndex(array, id){
-    let index;
-    array.forEach((element,position) => {
-        if (element.id === id){
-            index = position
-        }
-    })
-    return index ? index : -1;
-}
